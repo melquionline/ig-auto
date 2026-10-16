@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seu ManyChat Próprio</title>
+<meta name="description" content="Guia passo a passo para colocar no ar o ig-auto: automações de Instagram no seu próprio servidor, usando a API oficial da Meta.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --grafite: #141414;
+  --carvao: #1C1C1C;
+  --linha: #E4E2DC;
+  --papel: #FBFAF7;
+  --tinta: #1A1A1A;
+  --cinza: #5E5D58;
+  --amarelo: #F5C400;
+  --amarelo-suave: #FFF6CC;
+  --vermelho-suave: #FDECEA;
+  --vermelho: #B3261E;
+  --f-display: 'DM Sans', system-ui, sans-serif;
+  --f-text: 'Source Serif 4', Georgia, serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; background: #E9E7E1; color: var(--tinta); font: 15.5px/1.7 var(--f-text); }
+
+/* ---------- Página ---------- */
+.page {
+  width: 210mm; min-height: 297mm; margin: 24px auto; padding: 22mm 20mm 24mm;
+  background: var(--papel); box-shadow: 0 2px 24px rgba(0,0,0,.08); position: relative;
+}
+.page + .page { break-before: page; }
+@page { size: A4; margin: 18mm 20mm 20mm;
+  @bottom-left { content: "Seu ManyChat próprio"; font: 500 8pt 'DM Sans', sans-serif; color: #A3A19A; letter-spacing: .06em; text-transform: uppercase; }
+  @bottom-right { content: counter(page); font: 500 8pt 'DM Sans', sans-serif; color: #A3A19A; }
+}
+@page cover { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
+@media print {
+  :root { --papel: #fff; }
+  html, body { background: #fff; font-size: 13.5px; line-height: 1.6; }
+  .lead { font-size: 15.5px; }
+  h2 { font-size: 30px; margin-bottom: 14px; }
+  h3 { margin-top: 22px; }
+  pre { font-size: 11.5px; padding: 11px 14px; }
+  .box { margin: 14px 0; padding: 12px 16px; }
+  .page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+  .cover { page: cover; height: 297mm; padding: 22mm 20mm 24mm; }
+  h3, h2, .chapter-num { break-after: avoid; }
+  .page + .page { break-before: auto; margin-top: 18mm; }
+  .cover + .page, .cover + .page + .page { break-before: page; margin-top: 0; }
+  #erros { break-before: page; margin-top: 0; }
+  .steps > li, .idea, .box, tr { break-inside: avoid; }
+}
+@media screen and (max-width: 820px) {
+  .page { width: auto; min-height: 0; margin: 0 0 12px; padding: 40px 16px 48px; box-shadow: none; }
+  body { font-size: 15px; }
+}
+
+/* ---------- Capa ---------- */
+.cover { background: var(--grafite); color: #F9F9F9; display: flex; flex-direction: column; justify-content: space-between; }
+.cover .kicker { font: 500 13px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--amarelo); }
+.cover h1 { font: 900 64px/1 var(--f-display); letter-spacing: -.03em; margin: 28px 0 20px; }
+.cover h1 em { font-style: normal; color: var(--amarelo); }
+.cover .sub { font-size: 19px; line-height: 1.5; color: #CFCDC6; max-width: 34ch; }
+.cover .flow { display: grid; gap: 10px; margin-top: 48px; max-width: 420px; }
+.cover .bubble { background: var(--carvao); border: 1px solid #2E2E2E; border-radius: 16px; padding: 12px 16px; font-size: 14px; color: #E8E6DF; }
+.cover .bubble b { color: #F9F9F9; }
+.cover .bubble--me { justify-self: end; background: var(--amarelo); color: var(--grafite); border-color: var(--amarelo); }
+.cover .bubble--me b { color: var(--grafite); }
+.cover .foot { display: flex; justify-content: space-between; font: 500 12px/1.4 var(--f-mono); color: #8D8B84; letter-spacing: .06em; text-transform: uppercase; }
+@media screen and (max-width: 820px) { .cover h1 { font-size: 44px; } }
+
+/* ---------- Tipografia ---------- */
+.chapter-num { font: 500 12px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cinza); }
+h2 { font: 900 36px/1.1 var(--f-display); letter-spacing: -.02em; margin: 10px 0 18px; }
+h2::after { content: ''; display: block; width: 48px; height: 5px; background: var(--amarelo); margin-top: 16px; }
+h3 { font: 700 19px/1.3 var(--f-display); margin: 30px 0 8px; }
+p { margin: 0 0 14px; }
+.lead { font-size: 17.5px; line-height: 1.6; color: #2D2C29; }
+ul, ol { padding-left: 22px; margin: 0 0 14px; }
+li { margin-bottom: 6px; }
+strong { font-weight: 600; }
+a { color: inherit; text-decoration-color: var(--amarelo); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+code { font: 500 .86em/1 var(--f-mono); background: #EFEDE7; padding: 2px 6px; border-radius: 5px; word-break: break-word; }
+pre { font: 400 13px/1.6 var(--f-mono); background: var(--grafite); color: #EDEBE4; padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 0 0 16px; break-inside: avoid; white-space: pre-wrap; word-break: break-all; }
+pre .c { color: #8D8B84; }
+pre code { background: none; padding: 0; font: inherit; }
+
+/* ---------- Componentes ---------- */
+.box { border-radius: 12px; padding: 14px 18px; margin: 18px 0; break-inside: avoid; }
+.box > :last-child { margin-bottom: 0; }
+.box-title { font: 700 13px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; display: block; }
+.tip { background: var(--amarelo-suave); border: 1px solid #F0DD8A; }
+.warn { background: var(--vermelho-suave); border: 1px solid #F3C5C0; }
+.warn .box-title { color: var(--vermelho); }
+.note { background: #F1EFE9; border: 1px solid var(--linha); }
+
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps > li { counter-increment: s; position: relative; padding-left: 44px; margin-bottom: 14px; }
+.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--grafite); color: var(--amarelo); font: 700 14px/28px var(--f-display); text-align: center;
+}
+
+table { width: 100%; border-collapse: collapse; margin: 8px 0 18px; font: 14px/1.5 var(--f-display); break-inside: avoid; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font: 700 12px/1.3 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--cinza); }
+.table-wrap { overflow-x: auto; }
+
+.toc { list-style: none; padding: 0; margin: 24px 0 0; }
+.toc li { display: flex; gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--linha); margin: 0; }
+.toc .n { font: 500 13px/1 var(--f-mono); color: var(--cinza); min-width: 28px; }
+.toc .t { font: 700 18px/1.3 var(--f-display); }
+.toc .d { display: block; font: 400 14px/1.5 var(--f-display); color: var(--cinza); margin-top: 2px; }
+
+.diagram { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 18px 0 22px; font-size: 13.5px; }
+.diagram span { background: #fff; border: 1px solid var(--linha); border-radius: 10px; padding: 8px 12px; }
+.diagram i { font-style: normal; color: var(--cinza); }
+.diagram .hl { background: var(--grafite); color: var(--amarelo); border-color: var(--grafite); font-weight: 600; }
+
+.check { list-style: none; padding: 0; }
+.check li { padding-left: 30px; position: relative; }
+.check li::before { content: ''; position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border: 2px solid var(--tinta); border-radius: 4px; }
+
+.idea { border: 1px solid var(--linha); background: #fff; border-radius: 12px; padding: 14px 18px; margin-bottom: 12px; break-inside: avoid; }
+.idea b { font-family: var(--f-display); font-size: 16px; }
+.idea .kw { font: 500 12px/1 var(--f-mono); background: var(--amarelo); color: var(--grafite); padding: 4px 8px; border-radius: 6px; margin-left: 6px; vertical-align: 2px; }
+.idea p { margin: 6px 0 0; color: #3C3B37; font-size: 14.5px; }
+
+</style>
+</head>
+<body>
+
+<!-- ===================== CAPA ===================== -->
+<section class="page cover">
+  <div>
+    <div class="kicker">ig-auto · guia de implantação</div>
+    <h1>Seu ManyChat <em>próprio</em>.</h1>
+    <p class="sub">Como colocar no ar automações de Instagram no seu servidor, com a API oficial da Meta e sem pagar mensalidade por contato.</p>
+    <div class="flow" aria-hidden="true">
+      <div class="bubble"><b>@cliente</b> comentou: EBOOK</div>
+      <div class="bubble bubble--me"><b>você</b> · Te mandei no direct! 📩</div>
+      <div class="bubble"><b>Direct</b> · Oi! Posso te mandar o link? <br>[ Quero o ebook 👉 ]</div>
+      <div class="bubble bubble--me"><b>você</b> · Seu ebook está aqui → [ Baixar ]</div>
+    </div>
+  </div>
+  <div class="foot"><span>Código aberto · Licença MIT</span><span>Edição 1 · 2026</span></div>
+</section>
+
+<!-- ===================== SUMÁRIO ===================== -->
+<section class="page">
+  <div class="chapter-num">Sumário</div>
+  <h2>O que tem aqui</h2>
+  <p class="lead">Este guia leva você do zero até a primeira automação respondendo comentários no seu perfil. Não precisa ser programador, mas vai precisar copiar e colar alguns comandos num servidor. Cada comando está aqui, na ordem certa.</p>
+  <ol class="toc">
+    <li><span class="n">01</span><span class="t">Como funciona<span class="d">O caminho de um comentário até a DM, e por que isso substitui o ManyChat.</span></span></li>
+    <li><span class="n">02</span><span class="t">O que você precisa<span class="d">Lista de compras, custos e o tempo que leva.</span></span></li>
+    <li><span class="n">03</span><span class="t">Preparar o servidor<span class="d">VPS, domínio, HTTPS e o ig-auto rodando 24 horas.</span></span></li>
+    <li><span class="n">04</span><span class="t">Criar o app na Meta<span class="d">O passo que mais trava, explicado clique a clique.</span></span></li>
+    <li><span class="n">05</span><span class="t">Conectar e testar<span class="d">Teste de fumaça: comentar "teste" e ver a DM chegar.</span></span></li>
+    <li><span class="n">06</span><span class="t">Sua primeira automação<span class="d">Montar o fluxo no painel e entender as regras da Meta.</span></span></li>
+    <li><span class="n">07</span><span class="t">Ideias que vendem<span class="d">Oito automações prontas para adaptar ao seu negócio.</span></span></li>
+    <li><span class="n">08</span><span class="t">Quando algo dá errado<span class="d">Os problemas mais comuns e como resolver cada um.</span></span></li>
+    <li><span class="n">09</span><span class="t">Checklist final<span class="d">Para conferir antes de divulgar a palavra-chave.</span></span></li>
+  </ol>
+</section>
+
+<!-- ===================== 01 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 01</div>
+  <h2>Como funciona</h2>
+  <p class="lead">Ferramentas como o ManyChat fazem uma coisa simples: recebem um aviso da Meta quando alguém interage com o seu perfil e respondem pela API oficial. O ig-auto faz exatamente isso, só que rodando num servidor que é seu.</p>
+
+  <div class="diagram" aria-label="Fluxo de um comentário">
+    <span>Pessoa comenta<br><b>EBOOK</b></span><i>→</i>
+    <span>Meta avisa o<br>seu servidor</span><i>→</i>
+    <span class="hl">ig-auto acha a<br>automação</span><i>→</i>
+    <span>Responde o comentário<br>e manda a DM</span>
+  </div>
+
+  <h3>O que ele faz</h3>
+  <ul>
+    <li><strong>Gatilhos:</strong> comentário em post ou reel, comentário na live, mensagem no direct e resposta de story.</li>
+    <li><strong>Palavra-chave:</strong> "contém a palavra", "é exatamente a palavra" ou "qualquer mensagem". Acentos e maiúsculas não importam.</li>
+    <li><strong>Fluxos:</strong> resposta pública com variações (para não parecer robô), mensagens com botões, cartão com imagem e links, etiquetas e pausas entre mensagens.</li>
+    <li><strong>Painel:</strong> você cria e edita tudo pelo navegador, vê uma prévia de como o lead recebe e acompanha o funil: quantos dispararam, quantos seguiram a conversa e quantos clicaram em cada link.</li>
+    <li><strong>Leads:</strong> lista com @, etiquetas, automações que a pessoa passou e um botão para abrir o direct dela.</li>
+  </ul>
+
+  <h3>Por que fazer o seu</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th></th><th>Ferramenta paga</th><th>ig-auto</th></tr>
+    <tr><td>Custo</td><td>Mensalidade que sobe conforme a base de contatos cresce</td><td>Só o servidor, que é fixo</td></tr>
+    <tr><td>Dados dos leads</td><td>Ficam na plataforma</td><td>Ficam no seu banco de dados</td></tr>
+    <tr><td>API</td><td>Oficial da Meta</td><td>Oficial da Meta (a mesma)</td></tr>
+    <tr><td>Personalização</td><td>O que a plataforma oferece</td><td>Código aberto: dá para mudar tudo</td></tr>
+    <tr><td>Manutenção</td><td>Da plataforma</td><td>Sua: servidor e atualizações</td></tr>
+  </table>
+  </div>
+
+  <div class="box note"><span class="box-title">Seja honesto consigo</span>
+  <p>Em troca de não pagar mensalidade, você assume o servidor. Se ele cair, as respostas param até você subir de novo. Para a maioria dos perfis isso dá pouquíssimo trabalho, mas é bom saber antes.</p></div>
+</section>
+
+<!-- ===================== 02 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 02</div>
+  <h2>O que você precisa</h2>
+  <p class="lead">Separe uma tarde. Com tudo em mãos, a implantação leva de 1 a 3 horas. A maior parte desse tempo vai para o app da Meta.</p>
+
+  <h3>Lista de compras</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Item</th><th>Para quê</th><th>Observação</th></tr>
+    <tr><td><strong>Servidor (VPS)</strong></td><td>Onde o ig-auto roda 24 horas</td><td>O plano mais simples já basta (1 vCPU, 1 GB de RAM), com Ubuntu 22.04 ou 24.04</td></tr>
+    <tr><td><strong>Domínio</strong></td><td>A Meta só conversa com endereços <code>https://</code></td><td>Pode ser um subdomínio de um site que você já tem, como <code>auto.seusite.com</code></td></tr>
+    <tr><td><strong>Instagram profissional</strong></td><td>A conta que vai responder</td><td>Comercial ou criador de conteúdo. Conta pessoal não funciona.</td></tr>
+    <tr><td><strong>Conta de desenvolvedor Meta</strong></td><td>Criar o app que conversa com o Instagram</td><td>Gratuita, em developers.facebook.com</td></tr>
+    <tr><td><strong>Um segundo perfil do Instagram</strong></td><td>Testar como se fosse um cliente</td><td>A automação não responde à própria conta</td></tr>
+  </table>
+  </div>
+
+  <h3>Termos que vão aparecer</h3>
+  <ul>
+    <li><strong>VPS:</strong> um computador alugado na internet, ligado o tempo todo.</li>
+    <li><strong>SSH:</strong> o jeito de "entrar" no servidor pelo terminal para digitar comandos.</li>
+    <li><strong>Webhook:</strong> o aviso que a Meta manda para o seu servidor quando algo acontece no perfil.</li>
+    <li><strong>Token:</strong> a autorização que o Instagram dá ao seu app para responder em nome da conta. Vale 60 dias, e o ig-auto renova sozinho. Só que, se você trocar a senha do Instagram, a Meta derruba o token, e aí é preciso entrar de novo no painel.</li>
+    <li><strong><code>.env</code>:</strong> o arquivo com as senhas e configurações do seu ig-auto. <strong>Nunca</strong> compartilhe nem publique esse arquivo.</li>
+  </ul>
+
+  <div class="box tip"><span class="box-title">Dica</span>
+  <p>Anote num bloco de notas, à medida que avança: o domínio, o ID e a chave secreta do app, o token de verificação e a senha de admin. Você vai usar cada um mais de uma vez.</p></div>
+</section>
+
+<!-- ===================== 03 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 03</div>
+  <h2>Preparar o servidor</h2>
+  <p class="lead">Neste capítulo você liga o servidor, aponta o domínio para ele, ativa o HTTPS e deixa o ig-auto rodando. Os comandos são para Ubuntu.</p>
+
+  <ol class="steps">
+    <li><strong>Aponte o domínio.</strong> No painel onde você comprou o domínio, crie um registro <code>A</code> apontando (por exemplo) <code>auto.seusite.com</code> para o IP da sua VPS. Pode levar alguns minutos para valer.</li>
+    <li><strong>Entre no servidor e instale o básico:</strong>
+<pre><code><span class="c"># no seu computador</span>
+ssh root@IP_DA_VPS
+
+<span class="c"># já dentro do servidor: Node 22, nginx, certificado HTTPS e git</span>
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs nginx certbot python3-certbot-nginx git
+npm install -g pm2</code></pre></li>
+    <li><strong>Baixe o ig-auto e crie o seu <code>.env</code>:</strong>
+<pre><code>cd /opt
+git clone https://github.com/SEU_USUARIO/ig-auto.git
+cd ig-auto
+npm install
+cp .env.example .env
+nano .env</code></pre>
+    Por enquanto, preencha só o que já dá para preencher:
+<pre><code>PUBLIC_URL=https://auto.seusite.com
+VERIFY_TOKEN=<span class="c">invente uma palavra longa, ex.: banana-azul-7731</span>
+ADMIN_KEY=<span class="c">gere com: openssl rand -hex 16</span>
+SESSION_SECRET=<span class="c">gere com: openssl rand -hex 32</span>
+PANEL_USERS=<span class="c">seu @ do Instagram, sem o @</span></code></pre>
+    Para salvar no <code>nano</code>: <code>Ctrl+O</code>, <code>Enter</code>, <code>Ctrl+X</code>.</li>
+    <li><strong>Ligue o nginx para o seu domínio.</strong> Crie o arquivo <code>/etc/nginx/sites-available/ig-auto</code>:
+<pre><code>server {
+    server_name auto.seusite.com;
+    location / {
+        proxy_pass http://127.0.0.1:3020;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}</code></pre>
+<pre><code>ln -s /etc/nginx/sites-available/ig-auto /etc/nginx/sites-enabled/
+nginx -t &amp;&amp; systemctl reload nginx
+certbot --nginx -d auto.seusite.com   <span class="c"># ativa o HTTPS</span></code></pre></li>
+    <li><strong>Suba o ig-auto e deixe ele ligado para sempre:</strong>
+<pre><code>cd /opt/ig-auto
+pm2 start npm --name ig-auto -- start
+pm2 save &amp;&amp; pm2 startup   <span class="c"># volta sozinho se o servidor reiniciar</span></code></pre>
+    Abra <code>https://auto.seusite.com/health</code> no navegador. Se aparecer <code>{"ok":true,...}</code>, o servidor está pronto.</li>
+  </ol>
+
+  <div class="box tip"><span class="box-title">Num subcaminho</span>
+  <p>Se o ig-auto vai ficar em <code>seusite.com/ig-auto</code> em vez de um subdomínio, use <code>location /ig-auto/ { proxy_pass http://127.0.0.1:3020/; ... }</code> e coloque <code>PUBLIC_URL=https://seusite.com/ig-auto</code>.</p></div>
+</section>
+
+<!-- ===================== 04 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 04</div>
+  <h2>Criar o app na Meta</h2>
+  <p class="lead">O app é a "identidade" do seu ig-auto perante a Meta. É a parte com mais telas, e a Meta muda os nomes dos menus de tempos em tempos. Se algo estiver com outro nome, procure pela palavra-chave em negrito.</p>
+
+  <ol class="steps">
+    <li><strong>Crie o app.</strong> Em developers.facebook.com → Meus apps → Criar app, escolha o caso de uso <strong>"Gerenciar mensagens e conteúdo no Instagram"</strong> e, se for perguntado, a <strong>API com login do Instagram</strong>.</li>
+    <li><strong>Pegue as credenciais.</strong> Em <strong>Configuração da API com login do Instagram</strong>, copie o <strong>ID do app do Instagram</strong> e a <strong>chave secreta do app do Instagram</strong>. Coloque no <code>.env</code> como <code>IG_APP_ID</code> e <code>IG_APP_SECRET</code> e rode <code>pm2 restart ig-auto</code>.</li>
+    <li><strong>Configure o webhook.</strong> Na seção de <strong>webhooks</strong>:
+      <ul>
+        <li>URL de callback: <code>https://auto.seusite.com/webhook</code></li>
+        <li>Token de verificação: o mesmo <code>VERIFY_TOKEN</code> do <code>.env</code></li>
+        <li>Clique em verificar e salvar. Depois assine os campos <code>comments</code>, <code>live_comments</code>, <code>messages</code>, <code>messaging_postbacks</code>, <code>messaging_seen</code> e <code>message_reactions</code>.</li>
+      </ul></li>
+    <li><strong>Cadastre o retorno do login.</strong> Em <strong>Login comercial do Instagram</strong>, adicione a URI de redirecionamento <code>https://auto.seusite.com/oauth/callback</code>.</li>
+    <li><strong>Publique uma política de privacidade.</strong> O repositório traz um modelo em <code>privacidade/index.html</code>. Troque os campos entre colchetes, publique no seu site e cole a URL nas configurações básicas do app. Troque também os campos de Termos e Exclusão de dados, que vêm preenchidos com facebook.com.</li>
+    <li><strong>Torne-se testador.</strong> Em <strong>Funções → Testadores do Instagram</strong>, adicione o seu perfil. Depois, no Instagram, aceite o convite em Configurações → Apps e sites.</li>
+    <li><strong>Publique o app.</strong> Mude o app para o modo publicado (Live). <strong>Sem isso, o webhook não entrega nada.</strong></li>
+  </ol>
+
+  <div class="box note"><span class="box-title">Preciso de revisão da Meta?</span>
+  <p>Para automatizar <strong>o seu próprio perfil</strong>, não. Com o app publicado no acesso padrão, as contas que têm função no app (você, como testador) conectam normalmente, e comentários e DMs de <em>qualquer pessoa</em> chegam ao webhook. A revisão (acesso avançado) só é necessária se você quiser que <strong>outros</strong> perfis conectem no seu app, como num serviço para clientes.</p></div>
+
+  <div class="box warn"><span class="box-title">Pegadinha conhecida</span>
+  <p>Se ao convidar o testador pela aba Funções aparecer <strong>"O formulário não pode ser salvo"</strong>, vá no passo de <strong>gerar tokens</strong> da configuração da API, clique em <strong>"Adicionar conta"</strong> e escolha o perfil na lista de sugestões.</p></div>
+</section>
+
+<!-- ===================== 05 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 05</div>
+  <h2>Conectar e testar</h2>
+  <p class="lead">Agora o seu servidor e o app se conhecem. Falta autorizar o perfil e fazer o teste de fumaça: o primeiro "oi" automático.</p>
+
+  <ol class="steps">
+    <li><strong>Conecte o perfil.</strong> Abra no navegador:
+<pre><code>https://auto.seusite.com/connect?key=SEU_ADMIN_KEY</code></pre>
+    Entre com o Instagram e autorize. Deve aparecer <strong>"✅ @seuperfil conectado"</strong>. Nesse momento o ig-auto guarda o token e assina os webhooks da conta.</li>
+    <li><strong>Ligue o modo teste.</strong> No <code>.env</code>, deixe <code>SMOKE_TEST=1</code> e rode <code>pm2 restart ig-auto</code>.</li>
+    <li><strong>Comente "teste"</strong> num post seu usando o <strong>segundo perfil</strong>. Em poucos segundos devem chegar uma resposta pública ("Te chamei no direct 👀") e uma DM.</li>
+    <li><strong>Acompanhe ao vivo</strong>, se quiser ver o que está acontecendo:
+<pre><code>pm2 logs ig-auto</code></pre></li>
+    <li><strong>Feche o modo teste e ligue a segurança.</strong> Com tudo funcionando, ajuste o <code>.env</code> e reinicie:
+<pre><code>SMOKE_TEST=0
+SIGNATURE_ENFORCE=1   <span class="c"># só aceita avisos assinados pela Meta</span></code></pre></li>
+  </ol>
+
+  <div class="box tip"><span class="box-title">Funcionou?</span>
+  <p>Então a parte difícil acabou. Daqui pra frente é criatividade: tudo o mais acontece no painel, sem comando nenhum.</p></div>
+
+  <h3>Se não chegou nada</h3>
+  <p>Vá direto ao <a href="#erros">capítulo 08</a>. Em 9 de cada 10 casos, o problema é um destes: app não publicado, comentário feito pela própria conta ou o campo <code>comments</code> não assinado no webhook.</p>
+</section>
+
+<!-- ===================== 06 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 06</div>
+  <h2>Sua primeira automação</h2>
+  <p class="lead">Acesse <code>https://auto.seusite.com/painel/</code> e clique em <strong>Entrar com Instagram</strong>. Só os @ listados em <code>PANEL_USERS</code> conseguem entrar.</p>
+
+  <h3>Montando o fluxo</h3>
+  <ol class="steps">
+    <li><strong>Onde dispara:</strong> marque comentário em post ou reel, live, direct ou resposta de story. Pode marcar vários.</li>
+    <li><strong>Em qual post:</strong> qualquer um ou um post específico, escolhido pela miniatura.</li>
+    <li><strong>Palavras-chave:</strong> por exemplo, <code>ebook</code>. Use palavras curtas, fáceis de digitar e que ninguém escreveria sem querer.</li>
+    <li><strong>Respostas públicas:</strong> escreva 3 ou mais variações. O ig-auto sorteia uma por vez para não parecer robô.</li>
+    <li><strong>Mensagens:</strong> monte a sequência com mensagens, botões, cartão com link e etiquetas. Use <strong>"Reproduzir a conversa"</strong> para ver no celular de prévia exatamente o que o lead vai receber.</li>
+    <li><strong>Salve e ligue.</strong> Pronto, já está valendo.</li>
+  </ol>
+
+  <h3>As regras da Meta (que o motor já respeita)</h3>
+  <div class="box warn"><span class="box-title">A regra mais importante</span>
+  <p>A partir de um <strong>comentário</strong>, a Meta deixa você mandar <strong>uma única DM</strong> até a pessoa responder. Por isso a primeira mensagem precisa de um <strong>botão</strong> ("Quero receber 👉"). Quando a pessoa clica, a conversa fica aberta e o resto do fluxo pode seguir. O painel avisa se você esquecer.</p></div>
+  <ul>
+    <li><strong>Limites de formato:</strong> até 3 botões por mensagem, 20 caracteres por botão, 80 no título do cartão e 1000 por mensagem. Os links precisam começar com <code>https://</code>.</li>
+    <li><strong>Sem spam:</strong> a mesma pessoa não recebe o mesmo fluxo duas vezes em 12 horas. Se ela comentar de novo, recebe só a resposta pública.</li>
+    <li><strong>Janela de 24 horas:</strong> no direct, a Meta só deixa você responder dentro de 24 horas depois da última mensagem da pessoa.</li>
+    <li><strong>Plano B automático:</strong> se a Meta recusar um formato (cartão ou botões), o envio tenta respostas rápidas e, por último, texto com o link.</li>
+  </ul>
+
+  <h3>Acompanhando os resultados</h3>
+  <p>Na lista de automações, cada uma mostra o seu funil: <strong>disparos → seguiram a conversa → cliques em cada link</strong>. Os links passam por um endereço do próprio ig-auto (<code>/r/código</code>), e é assim que ele sabe quem clicou. Na aba <strong>Leads</strong> você filtra por etiqueta e abre o direct de cada pessoa com um clique.</p>
+</section>
+
+<!-- ===================== 07 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 07</div>
+  <h2>Ideias que vendem</h2>
+  <p class="lead">Uma automação boa entrega exatamente o que foi prometido no vídeo, rápido, e faz <strong>uma</strong> pergunta ou dá <strong>um</strong> próximo passo. Oito modelos para adaptar:</p>
+
+  <div class="idea"><b>Material gratuito</b><span class="kw">EBOOK</span>
+  <p>"Comenta EBOOK que eu te mando." Botão de confirmação → cartão com o link de download → etiqueta <code>ebook</code>. É o exemplo que já vem no repositório.</p></div>
+  <div class="idea"><b>Lista de espera</b><span class="kw">QUERO</span>
+  <p>Para lançamentos: DM explica a data e o botão leva ao formulário ou ao grupo. Etiqueta <code>lista-espera</code> para chamar no dia da abertura.</p></div>
+  <div class="idea"><b>Cupom</b><span class="kw">CUPOM</span>
+  <p>Reel do produto → DM com o código e o link da loja já com o desconto. Use um código diferente por vídeo para saber qual vendeu mais.</p></div>
+  <div class="idea"><b>Diagnóstico ou orçamento</b><span class="kw">DIAGNÓSTICO</span>
+  <p>Serviços: duas ou três mensagens mostrando a dor e o método, depois um cartão com dois caminhos: "Fazer o diagnóstico" (página) ou "Falar no WhatsApp" (link <code>wa.me</code> com o texto pronto).</p></div>
+  <div class="idea"><b>Live</b><span class="kw">LINK</span>
+  <p>Durante a live, quem comenta a palavra recebe o link da oferta na hora, sem você parar para responder.</p></div>
+  <div class="idea"><b>Resposta de story</b><span class="kw">qualquer palavra</span>
+  <p>Story com caixa de pergunta ou "responde SIM": dispare com "qualquer mensagem" num story específico e abra com "Que bom que você respondeu meu story!".</p></div>
+  <div class="idea"><b>Direct de boas-vindas</b><span class="kw">PREÇO</span>
+  <p>As perguntas que mais chegam no direct ("preço", "valor", "como funciona") com resposta pronta e um botão para falar com uma pessoa.</p></div>
+  <div class="idea"><b>Agenda</b><span class="kw">AGENDA</span>
+  <p>Para clínicas e consultórios: link direto para o agendamento online, com etiqueta para a equipe confirmar depois.</p></div>
+
+  <div class="box tip"><span class="box-title">Teste rápido</span>
+  <p>Coloque UTMs nos links (<code>?utm_source=instagram&amp;utm_medium=dm&amp;utm_campaign=ebook</code>) para ver no seu site ou CRM quantas vendas vieram de cada palavra.</p></div>
+</section>
+
+<!-- ===================== 08 ===================== -->
+<section class="page" id="erros">
+  <div class="chapter-num">Capítulo 08</div>
+  <h2>Quando algo dá errado</h2>
+  <p class="lead">O primeiro lugar a olhar é sempre o log: <code>pm2 logs ig-auto</code>. Cada evento recebido aparece ali com a origem e o texto.</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Sintoma</th><th>Causa provável</th><th>Solução</th></tr>
+    <tr><td>Nada aparece no log ao comentar</td><td>App não publicado ou campo não assinado</td><td>Publique o app (modo Live) e confira os campos assinados do webhook</td></tr>
+    <tr><td>O webhook não verifica na Meta</td><td>Token diferente, ou servidor fora do ar ou sem HTTPS</td><td>Confira o <code>VERIFY_TOKEN</code>, o <code>/health</code> e o certificado</td></tr>
+    <tr><td>Comentei e não respondeu</td><td>Comentou com a própria conta</td><td>Teste com outro perfil. A conta nunca responde a si mesma.</td></tr>
+    <tr><td>Respondeu só no comentário, sem DM</td><td>A mesma pessoa já recebeu esse fluxo há menos de 12 horas</td><td>É proposital (antispam). Teste com outro perfil ou espere.</td></tr>
+    <tr><td><code>webhook_bad_signature</code> no log</td><td><code>IG_APP_SECRET</code> errado</td><td>Copie de novo a chave secreta <em>do Instagram</em>, não a do app Facebook</td></tr>
+    <tr><td>"não tem acesso a este painel"</td><td>@ fora do <code>PANEL_USERS</code></td><td>Adicione o @ (sem o @) e reinicie</td></tr>
+    <tr><td>Parou de responder de uma hora para outra (erro <code>190</code> ou "session has been invalidated" no log)</td><td>A Meta derrubou o token, normalmente porque a senha do Instagram foi trocada, ou o token venceu com o servidor desligado</td><td>Entre de novo no painel com <strong>Entrar com Instagram</strong> (ou abra <code>/connect?key=…</code>). Isso salva um token novo e reassina os webhooks.</td></tr>
+    <tr><td>Botão não aparece, só texto</td><td>A Meta recusou o formato</td><td>Normal: o plano B entregou em texto. Confira o tamanho dos títulos.</td></tr>
+  </table>
+  </div>
+
+  <div class="box warn"><span class="box-title">O erro mais traiçoeiro: token caído</span>
+  <p>Quando o token cai, nada quebra visivelmente: o servidor continua no ar, o <code>/health</code> responde <code>ok</code> e os comentários chegam ao log, mas nenhuma resposta sai. Dá para passar dias sem perceber. Sempre que trocar a senha do Instagram, entre de novo no painel. E, de vez em quando, comente a palavra de uma automação com um segundo perfil para confirmar que está tudo respondendo.</p>
+  <p>Depois que você reconecta, quem tentou durante a queda pode tentar de novo na hora: tentativas que falharam antes de enviar qualquer DM não contam na pausa de 12 horas.</p></div>
+
+  <h3>Atualizando o ig-auto</h3>
+<pre><code>cd /opt/ig-auto
+git pull
+npm install
+pm2 restart ig-auto</code></pre>
+  <p>Suas automações e leads ficam na pasta <code>data/</code> e não são afetados pela atualização.</p>
+
+  <h3>Backup</h3>
+  <p>Tudo o que importa está em <code>data/ig-auto.db</code> e no <code>.env</code>. Copie os dois de tempos em tempos para um lugar seguro, e <strong>nunca</strong> para um repositório público: eles têm os tokens da sua conta e os dados dos seus leads.</p>
+</section>
+
+<!-- ===================== 09 ===================== -->
+<section class="page">
+  <div class="chapter-num">Capítulo 09</div>
+  <h2>Checklist final</h2>
+  <p class="lead">Antes de falar a palavra-chave num vídeo, confira:</p>
+
+  <h3>Servidor</h3>
+  <ul class="check">
+    <li><code>https://seudominio/health</code> responde <code>ok</code></li>
+    <li>O <code>pm2 startup</code> foi executado (o ig-auto volta sozinho se o servidor reiniciar)</li>
+    <li><code>SMOKE_TEST=0</code> e <code>SIGNATURE_ENFORCE=1</code></li>
+    <li>Backup do <code>.env</code> e de <code>data/</code> guardado</li>
+    <li>Combinado com a equipe: trocou a senha do Instagram, entra de novo no painel</li>
+  </ul>
+
+  <h3>Meta</h3>
+  <ul class="check">
+    <li>App publicado (Live)</li>
+    <li>Webhook verificado, com os 6 campos assinados</li>
+    <li>Política de privacidade com os seus dados, publicada</li>
+    <li>Perfil conectado pelo <code>/connect</code></li>
+  </ul>
+
+  <h3>Automação</h3>
+  <ul class="check">
+    <li>Palavra-chave curta, fácil e falada no vídeo exatamente como está no painel</li>
+    <li>A primeira DM depois de um comentário tem botão</li>
+    <li>Todos os links abrem, começam com <code>https://</code> e têm UTM</li>
+    <li>Testado com um segundo perfil, do comentário até o clique no link</li>
+    <li>Automação <strong>ligada</strong> no painel</li>
+  </ul>
+
+  <div class="box note"><span class="box-title">Responsabilidade com os dados</span>
+  <p>Os dados dos seus leads ficam no seu servidor, e você é o responsável por eles perante a LGPD. Responda a pedidos de exclusão, não compartilhe a base e mantenha a política de privacidade atualizada.</p></div>
+
+  <div class="box tip"><span class="box-title">Código aberto</span>
+  <p>O ig-auto é gratuito e de código aberto (licença MIT). Encontrou um erro ou fez uma melhoria? Abra uma issue ou um pull request no repositório.</p></div>
+</section>
+
+</body>
+</html>

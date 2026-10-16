@@ -1,0 +1,11 @@
+{
+  "name": "ig-auto",
+  "version": "0.1.0",
+  "description": "Motor de automações nativas de Instagram (estilo ManyChat) — multi-conta",
+  "type": "module",
+  "main": "src/index.js",
+  "license": "MIT",
+  "engines": { "node": ">=22.13" },
+  "scripts": { "start": "node --no-warnings=ExperimentalWarning src/index.js" },
+  "dependencies": { "dotenv": "^16.4.5", "express": "^4.21.2" }
+}

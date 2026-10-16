@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automações — ig-auto</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,900&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,500;1,600&family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="painel.css?v=2">
+</head>
+<body>
+<div class="shell" id="shell" hidden>
+  <aside class="side">
+    <a class="brand" href="#/automacoes" aria-label="Início">
+      <span class="brand-sig">ig-auto</span>
+      <span class="brand-sub">automações</span>
+    </a>
+    <nav class="nav" aria-label="Seções">
+      <a href="#/automacoes" data-nav="automacoes">Automações</a>
+      <a href="#/leads" data-nav="leads">Leads</a>
+    </nav>
+    <div class="me">
+      <span id="me-user"></span>
+      <button class="link-btn" id="logout" type="button">Sair</button>
+    </div>
+  </aside>
+  <main class="main" id="view" tabindex="-1"></main>
+</div>
+
+<section class="login" id="login" hidden>
+  <div class="login-card">
+    <span class="brand-sig brand-sig--xl">ig-auto</span>
+    <h1>Automações do Instagram</h1>
+    <p>Entre com a conta que recebe os comentários e directs.</p>
+    <a class="btn btn--accent" href="entrar">Entrar com Instagram</a>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="painel.js?v=3" type="module"></script>
+</body>
+</html>
